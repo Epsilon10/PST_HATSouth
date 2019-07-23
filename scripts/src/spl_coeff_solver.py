@@ -1,7 +1,6 @@
 from ctypes import cdll, c_double, c_uint
 import numpy as np
-from scipy.interpolate import RectBivariateSpline
-from collections import namedtuple
+from scipy.interpolate import RegularGridInterpolator
 from dll_loader import PSFDllLoader
 
 
@@ -35,15 +34,15 @@ class SubpixelCoeffSolver:
         - max_y_wavenumber
     """
     
-
     def _get_response(self, pixel_x, pixel_y, row):
         for nx in range(self.subpixel_res_x):
             for ny in range(self.subpixel_res_y):
                 x = pixel_x + nx*self.dx + self.dx/2.0 - self.x_0
                 y = pixel_y + ny*self.dy + self.dy/2.0 - self.y_0
-                self.sums[row][ny + nx * self.subpixel_res_y] = self.spline.ev(abs(x),abs(y))
+                print(x,y)
+                self.sums[row][ny + nx * self.subpixel_res_y] = self.interp((abs(x),abs(y)))
         return np.sum(self.sums[row])
-
+    
     def solve(self, wavelength, focal_ratio, variance_x,variance_y, subpixel_res_x, subpixel_res_y, 
         map_res_x, map_res_y, max_x_wavenumber, max_y_wavenumber, x_0, y_0, x_min, x_max, y_min, y_max):
         self.c_src.execute(
@@ -62,7 +61,7 @@ class SubpixelCoeffSolver:
         self.y_0 = y_0
         self.responses = np.empty(shape=num_x_pixels * num_y_pixels, dtype = c_double)
         self.sums = np.empty(shape = (num_x_pixels * num_y_pixels, subpixel_res_x * subpixel_res_y), dtype=c_double)
-        self.spline = RectBivariateSpline(self.c_src.x_vals, self.c_src.y_vals, self.c_src.I_vals)
+        self.interp = RegularGridInterpolator((self.c_src.x_vals,self.c_src.y_vals), self.c_src.I_vals)
         for pixel_x in range(x_min, x_max):
             for pixel_y in range(y_min, y_max):
                 row = pixel_y + pixel_x * num_y_pixels
@@ -71,4 +70,3 @@ class SubpixelCoeffSolver:
 
 solver = SubpixelCoeffSolver()
 x = solver.solve(0.6, 2.0, 0.01, 0.01, 10,10, int(6e3), int(6e3), 6,6, 3,3, -5, 5, -5 ,5)
-print(x[:50])

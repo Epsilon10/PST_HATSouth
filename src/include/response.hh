@@ -10,6 +10,10 @@
 
 constexpr std::complex<double> i(0.0,1.0);
 
+/**
+ * Class that 
+ *
+ */
 class Response {
     public:
     Response(
@@ -39,23 +43,51 @@ class Response {
         fftw_execute(p);
     }
 
+    /**
+     * Returns the value of the integral at some i,j
+     * @param i -> row
+     * @param j -> column
+     * TODO: switch to tensor implementation
+     */
     double get_I(size_t i, size_t j) {
         return I_vals[j + i * map_resolutions.second];
     }
 
-
+    /**
+     * @return x wavenumbers
+     */
     const std::vector<double>& get_kx_vals() const { return kx_vals; }
+
+    /**
+     * @return y wavenumbers
+     */
     const std::vector<double>& get_ky_vals() const { return ky_vals; }
+
+    /**
+     * @return subpixel integrals
+     */
     const std::vector<double>& get_I_vals() const { return I_vals; }
+
+    /**
+     * @return psi amplitudes
+     */
     const std::vector<double>& get_psi_vals_amp() const { return psi_amps; }
 
-    void fill_x_vals(double* in) {
+    /**
+     * Fill map x coordinates
+     * @param in -> pointer to input array
+     */
+    void fill_x_vals(double* in) const {
         for (size_t k = 0; k < map_resolutions.first; k++) {
             double x = k / (2.0 * wavenum_ranges.first);
             in[k] = x;
         }
     }
 
+    /**
+     * Fill map y coordinates
+     * @param in -> pointer to input array
+     */
     void fill_y_vals(double* in) const {
         for (size_t l = 0; l < map_resolutions.second; l++) {
             double y =  l / (2.0 * wavenum_ranges.second);
@@ -63,9 +95,16 @@ class Response {
         }
     }
 
+    /**
+     * Get value of psi and a set of indices
+     * @param i -> row index
+     * @param -> column index
+     */
     std::complex<double> get_psi_vals(size_t i, size_t j) const {
         return psi_vals[j + i * map_resolutions.second];
     }
+
+    
     void test_fourier() {
         /* 
         std::vector<std::complex<double>> second_psi;

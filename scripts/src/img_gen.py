@@ -27,7 +27,6 @@ c_src.execute(
     wavelength, focal_ratio, s_x, s_y, subpixel_res_x,subpixel_res_y, map_res_x, map_res_y, max_wavenumbner_x,max_wavenumber_y
 )
 
-
 X, Y = np.meshgrid(c_src.x_vals, c_src.y_vals)
 Z = c_src.I_vals
 
