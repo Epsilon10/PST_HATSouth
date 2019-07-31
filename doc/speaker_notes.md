@@ -1,12 +1,26 @@
 **Experiment**
 
-Waves are emitted through a mask which directs the waves to a certain spot on the image plane. Each waves converges to a small area which causes the spot shape to be formed. 
+In order to solve for a map of the pixel sensitivities, an experiment can be set up in which the wavelength and destination of the waves are predefined. The wave will be directed onto the image plane and converge to its point spread function, which is the distrubution of its intensity. 
 
 **Airy Disk**
 
-The airy disk allows to obtain the intensity at some point on the aperture (excluding jitter)
+The airy disk allows you to obtain the intensity at some point on the aperture (excluding jitter).
+
+We can solve for theta from the following equation ...
+
+The fourier transform of the airy disk is the optical transfer function, which represents a convolution of a disk with a disk. rho is the size of the disk and rho prime is used to scale it in the fourier space based on the distance from the aperture and the wavelength (since we are now using wavenumbers insted of x,y).
 
 **Gaussian**
+
+The gaussian is used to account for mechanical instability of the setup. The inputs of the gaussian, which are the 
+
+**Fourier Transforms**
+
+The fourier transform of the Airy disk is the optical transfer function which takes in an x,y coordinate on the aperture and outputs an intensity. 
+
+**Point Spread function**
+
+
 
 **Response** 
 
