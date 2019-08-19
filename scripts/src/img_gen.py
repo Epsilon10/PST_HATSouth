@@ -30,6 +30,9 @@ c_src.execute(
 X, Y = np.meshgrid(c_src.x_vals, c_src.y_vals)
 Z = c_src.I_vals
 
+ax.set_xlabel('x (microns)')
+ax.set_ylabel('y (microns)')
+
 surf = ax.plot_surface(X[:30, :30],Y[:30, :30],Z[:30, :30], cmap=cm.coolwarm,
                        linewidth=0, antialiased=False)
 

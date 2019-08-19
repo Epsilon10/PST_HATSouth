@@ -22,8 +22,8 @@ X, Y = np.meshgrid(c_src.kx_vals, c_src.ky_vals)
 
 Z = c_src.psi_amps
 
-ax.set_xlabel('x wavelengths')
-ax.set_ylabel('y wavelengths')
+ax.set_xlabel('x wavenumbers')
+ax.set_ylabel('y wavenumbers')
 ax.set_zlabel('PSF')
 surf = ax.plot_surface(X[:240,:240], Y[:240,:240], Z.transpose()[:240,:240], cmap=cm.coolwarm,
                        linewidth=0, antialiased=False)

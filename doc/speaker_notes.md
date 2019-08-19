@@ -1,6 +1,6 @@
 **Experiment**
 
-In order to solve for a map of the pixel sensitivities, an experiment can be set up in which the wavelength and destination of the waves are predefined. The wave will be directed onto the image plane and converge to its point spread function, which is the distrubution of its intensity. 
+In order to solve for a map of the pixel sensitivities, an experiment can be set up in which the wavelength and destination of the waves are predefined. The wave will be directed onto the image plane and converge to its point spread function, which is the distribution of its intensity. 
 
 **Airy Disk**
 
@@ -20,11 +20,39 @@ The fourier transform of the Airy disk is the optical transfer function which ta
 
 **Point Spread function**
 
+Airy Disk- represents the intensity when given an x,y coordinate on the aperture
 
+gaussian- used to account for mechanical jitter
+
+The final psf in the fourier space takes in a wavelength, a focal ratio, and x y wavelength, and standard deviations of the centroids in x and y
+
+We multiply the gaussian in x and y with the otf to get the final psf in the fourier space
+
+In order to get back to the real space we will take the inverse transform at a more convenient time
+
+PSF Graph
+
+This is the Point spread function in the fourier space, as a function of x and y wavelengths
+
+We can notice a peak near 0 because that is when the OTF is the largest
+
+As x and y get too large, the OTF tends to 0 hence the PSF does as well
+
+We used this behavior to verify that our model in code was working correctly
+
+**Model**
+
+The next step was to model the point response function (PRF) which tells us the response of a pixel (p,q)
+
+We split up the pixel into a grid of subpixels as show here, and with each pixel being a 1 x 1 box
+
+**Intensities Graph**
+
+Here we have a graph of all the subpixel intensities which again has similar peaks and minimum due to the OTF. 
 
 **Response** 
 
-The calculation of the response can be described as the subpixel sensitivity map coefficient at a certain subpixel times the the sum of the values of the point spread function evaluated at all points on the subpixel. This is known as the intensity of the subpixel. 
+In order to calculate the response of a pixel, we do the point spread function integrated over each subpixel and multiplied by the respective coeffecient, and then summing the integrands for each subpixel. 
 
 **Response 2**
 
