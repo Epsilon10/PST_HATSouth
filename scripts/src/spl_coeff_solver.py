@@ -2,23 +2,12 @@ from ctypes import cdll, c_double, c_uint
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 from dll_loader import PSFDllLoader
-
-
+from responses import get_responses_for_spot
+from scipy.interpole import RegularGridInterpolator
 
 class SubpixelCoeffSolver:
-    def __init__(self):
-        self.c_src = PSFDllLoader("./libpsf.so")
-    
-    
-    def _fill_sum_row(self, pixel_x, pixel_y, row):
-        for nx in range(self.subpixel_res_x):
-            for ny in range(self.subpixel_res_y):
-                x = pixel_x + nx*self.dx + self.dx/2.0 - self.x_0
-                y = pixel_y + ny*self.dy + self.dy/2.0 - self.y_0
-                print(x,y)
-                self.sums[row][ny + nx * self.subpixel_res_y] = self.interp((self.pixel_width * abs(x),self.pixel_height * abs(y)))
     """
-    Solves for the coeffecients of the subpixel sensitivity map.
+    Solves for the coeffecients of the subpixel sensitivity map .
     Args:
         - wavelength
         - focal_ratio 
@@ -38,38 +27,38 @@ class SubpixelCoeffSolver:
         - y_max: upper y coordinate of pixel
         - pixel_width: width of pixel
         - pixel_height: height of pixel
-        - respones: row vector of respones for all pixels
     """
-    def solve(self, wavelength, focal_ratio, variance_x,variance_y, subpixel_res_x, subpixel_res_y, 
-        map_res_x, map_res_y, max_x_wavenumber, max_y_wavenumber, x_0, y_0, x_min, x_max, y_min, y_max,pixel_width, pixel_height, responses):
-        self.c_src.execute(
-            wavelength, focal_ratio, variance_x,variance_y, subpixel_res_x, subpixel_res_y, 
-            map_res_x, map_res_y, max_x_wavenumber, max_y_wavenumber
+    def __init__(self, wavelength, focal_ratio, variance, subpixel_res, 
+        map_res, max_wavenumber,spots, all_pixels):
+        c_src = PSFDllLoader("./libpsf.so")
+        c_src.execute(
+            wavelength, focal_ratio, 
+            variance[0], variance[1],
+            subpixel_res[0], subpixel_res[1],
+            map_res[0], map_res[1],
+            max_wavenumber[0], max_wavenumber[1]
         )
-        num_x_pixels = x_max - x_min + 1
-        num_y_pixels = y_max - y_min + 1
+        self.all_pixels = all_pixels
+        self.spots = spots
+        self.intensities = RegularGridInterpolator((c_src.x_vals,c_src.y_vals), c_src.I_vals)
+    
+    def iterate(spot, solve_for_amplitude, amplitude=None, subpixel):
+        responses, median_stddev, pixel_coords = get_responses_for_spot(spot, all_pixels)
+        rotate_vector = numpy.ones_like(responses).T
+        intensity_matrix = self.intensities((pixel_coords['x'], pixel_coords['y']))
 
-        self.subpixel_res_x = subpixel_res_x
-        self.subpixel_res_y = subpixel_res_y
+        if solve_for_amplitude:
+            u, s, vh = numpy.linalg.svd(rotate_vector, full_matrices = True)
+            amplitudes = numpy.linalg.lstsq(intensity_matrix, 
+            return amplitudes
+        else:
+            pass
 
-        self.dx = 1.0 / subpixel_res_x
-        self.dy = 1.0 /subpixel_res_y
+    def solve_for_amplitude(spot, spl_map=None):
+        responses, median_stddev, pixel_coords = get_responses_for_spot(spot, all_pixels)
+        if spl_map is None:
+            spl_map = numpy.ones_like(responses)
+        
+        stddev = 
 
-        self.x_0 = x_0
-        self.y_0 = y_0
 
-        self.pixel_width = pixel_width
-        self.pixel_height = pixel_height
-
-        self.responses = responses
-        self.sums = np.empty(shape = (num_x_pixels * num_y_pixels, subpixel_res_x * subpixel_res_y), dtype=c_double)
-        self.interp = RegularGridInterpolator((self.c_src.x_vals,self.c_src.y_vals), self.c_src.I_vals)
-
-        for pixel_x in range(x_min, x_max):
-            for pixel_y in range(y_min, y_max):
-                row = pixel_y + pixel_x * num_y_pixels
-                self._fill_sum_row(pixel_x, pixel_y, row)
-        return np.linalg.lstsq(self.sums, self.responses, rcond = None)
-
-solver = SubpixelCoeffSolver()
-x = solver.solve(0.6, 2.0, 0.01, 0.01, 10,10, int(6e3), int(6e3), 6,6, 3,3, -5, 5, -5 ,5)
