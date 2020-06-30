@@ -81,10 +81,12 @@ class SubpixelCoeffSolver:
             assert amplitude is not None
             rotate_vector = numpy.full((1,intensity_matrix.shape[1]),1)
             u, s, vh = numpy.linalg.svd(rotate_vector, full_matrices = True)
-            new_intensities = (weighted_intensities * amplitude).dot(vh[:,1:])
 
-            rotated_spl_map = numpy.linalg.lstsq(new_intensities, weighted_responses - weighted_intensities.dot(vh[:,0]), rcond=None)
-            spl_map = vh[:,1:].dot(rotated_spl_map[0])
+            scaled_intensities = weighted_intensities * amplitude
+
+            rotated_spl_map = numpy.linalg.lstsq(scaled_intensities.dot(vh[:,1:]), weighted_responses - scaled_intensities.dot(vh[:,0]), rcond=None)
+
+            spl_map = vh[:,0] + vh[:,1:].dot(rotated_spl_map[0])
             return spl_map
         
     def _get_pixel_intensities(self,pixel):
