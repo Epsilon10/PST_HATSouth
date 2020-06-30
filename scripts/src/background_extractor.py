@@ -16,7 +16,7 @@ def get_pixels_in_range(source, bound, pixels_shape):
     lo_squared, hi_squared = lo_bound**2, hi_bound**2
 
     offset = hi_bound + 1
-    print(pixels_shape)
+    #print(pixels_shape)
     y_min = clamp(y_flr - offset, 0, pixels_shape[0] - 1)
     y_max = clamp(y_flr + offset, 0, pixels_shape[0] - 1)
 
@@ -32,8 +32,8 @@ def get_pixels_in_range(source, bound, pixels_shape):
 
     for pixel_y in range(0, subgrid_shape[0]):
         for pixel_x in range(0, subgrid_shape[1]):
-            img_y = y_min + pixel_y
-            img_x = x_min + pixel_x
+            img_y = y_min + pixel_y + 0.5
+            img_x = x_min + pixel_x + 0.5
             dist_squared = (img_x - x)**2 + (img_y - y)**2
             if dist_squared <= hi_squared and dist_squared >= lo_squared:
                 indices[idx] = (img_x, img_y)
@@ -72,6 +72,6 @@ def _get_adjusted_responses(bg_pixels, N=5):
     median = numpy.median(bg_pixels)
     # root(mean(square(pixels - median))/N)
     stddev = numpy.sqrt(numpy.mean(numpy.square(bg_pixels - median)))
-    print("PIXEL STD", stddev)
+   # print("PIXEL STD", stddev)
 
     return bg_pixels[abs(bg_pixels - median) < stddev * N], stddev / sqrt(num_bg_pixels)

@@ -13,8 +13,7 @@ spot_coord_type=[('x', float), ('y', float)]
 class PixelResponses():
     data: numpy.ndarray
     median_stddev: float
-    pixel_coords_x: numpy.ndarray
-    pixel_coords_y: numpy.ndarray
+    pixel_coords: numpy.ndarray
     pixel_stddevs: numpy.ndarray
 
 def get_surrounding_pixels(source,pixels_shape, radius=5):
@@ -39,8 +38,8 @@ def get_surrounding_pixels(source,pixels_shape, radius=5):
 
     for pixel_y in range(0, subgrid_shape[0]):
         for pixel_x in range(0, subgrid_shape[1]):
-            img_y = y_min + pixel_y
-            img_x = x_min + pixel_x
+            img_y = y_min + pixel_y + 0.5
+            img_x = x_min + pixel_x + 0.5
             dist_squared = (img_x - x)**2 + (img_y - y)**2
             if dist_squared <= radius_squared:
                 indices[idx] = (img_x, img_y)
@@ -58,12 +57,12 @@ def get_responses_for_spot(spot, all_pixel_values, all_pixel_stddevs):
     pixel_coords_y = matched_indices['y'] - spot[1]
 
     response_data, median_stddev = get_adjusted_responses(spot, raw_responses, all_pixel_values, all_pixel_stddevs)
+    pixel_coords = numpy.column_stack((pixel_coords_x, pixel_coords_y))
 
     return PixelResponses(
         data=response_data,
         median_stddev=median_stddev,
-        pixel_coords_x=pixel_coords_x,
-        pixel_coords_y=pixel_coords_y,
+        pixel_coords=pixel_coords,
         pixel_stddevs=pixel_stddevs
     )
 

@@ -20,6 +20,7 @@ c_src.execute(
 
 
 X1, Y1 = np.meshgrid(c_src.x_vals[:-1] , c_src.y_vals[:-1] )
+print(X1.shape)
 V1 = c_src.I_vals
 
 c_src.execute(
