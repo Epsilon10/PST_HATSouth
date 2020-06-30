@@ -1,0 +1,1 @@
+This project is focused on modeling structure of subpixels for accurate exoplanet detection, with the intent of improving the accuracy of analysis on lightcurves from the HATSouth telescopes run by Princeton University 
