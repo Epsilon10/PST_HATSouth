@@ -45,6 +45,7 @@ def get_pixels_in_range(source, bound, pixels_shape):
 def get_adjusted_responses(source, responses, pixel_values, pixel_stddevs):
     matched_indices = get_pixels_in_range(source=source, bound=(6,13), pixels_shape=pixel_values.shape)
     bg_pixels = pixel_values[matched_indices['y'], matched_indices['x']]
+
     bg_pixel_stddevs = pixel_stddevs[matched_indices['y'], matched_indices['x']]
 
     bg_pixels = numpy.sort(bg_pixels)
@@ -63,7 +64,6 @@ def get_adjusted_responses(source, responses, pixel_values, pixel_stddevs):
         prev_bg_pixels = new_bg_pixels
 
     median = numpy.median(new_bg_pixels)
-
     return responses - median, median_stddev
 
 def _get_adjusted_responses(bg_pixels, N=5):
