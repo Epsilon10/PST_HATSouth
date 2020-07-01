@@ -6,6 +6,7 @@ from math import sqrt
 from background_extractor import get_adjusted_responses 
 from utils import read_spot_sources, get_pixel_values, clamp
 from dataclasses import dataclass
+import matplotlib.pyplot as plt
 
 spot_coord_type=[('x', float), ('y', float)]
 
@@ -47,8 +48,17 @@ def get_surrounding_pixels(source,pixels_shape, radius=5):
 
     return indices[:idx]
 
+def get_center_row(source, radius):
+    x,y = source
+    row = round(y)
+    indices = numpy.empty((radius * 2 + 1,),dtype=[('x', int), ('y', int)])
+    indices['x'] = numpy.arange(int(x) - radius, int(x) + radius + 1)
+    indices['y'] = row
+    return indices
+
 def get_responses_for_spot(spot, all_pixel_values, all_pixel_stddevs):
     matched_indices = get_surrounding_pixels(spot, all_pixel_values.shape)
+    #matched_indices = get_center_row(spot, 6)
 
     raw_responses = all_pixel_values[matched_indices['y'], matched_indices['x']]
     pixel_stddevs = all_pixel_stddevs[matched_indices['y'], matched_indices['x']]
@@ -57,6 +67,11 @@ def get_responses_for_spot(spot, all_pixel_values, all_pixel_stddevs):
     pixel_coords_y = matched_indices['y'] - spot[1]
 
     response_data, median_stddev = get_adjusted_responses(spot, raw_responses, all_pixel_values, all_pixel_stddevs)
+
+    
+    #plt.savefig(f'plots/thing')
+    #plt.clf()
+
     pixel_coords = numpy.column_stack((pixel_coords_x, pixel_coords_y))
 
     return PixelResponses(
@@ -65,6 +80,7 @@ def get_responses_for_spot(spot, all_pixel_values, all_pixel_stddevs):
         pixel_coords=pixel_coords,
         pixel_stddevs=pixel_stddevs
     )
+
 
 def test():
     spot_sources = read_spot_sources("/home/epsilon/Documents/photometry/images/projected/calibrated_nontilted_scan_projected_0068.fistar", 4,5)[:51]

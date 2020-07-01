@@ -9,11 +9,16 @@ import matplotlib.pyplot as plt
 
 import copy
 
+PIXEL_SIZE = 9.0 # microns
+
+MAX_ITER = 100
+NUM_SPOTS = 51
+
 wavelength = 0.6
 focal_ratio = 11.0
-s_x = s_y = 1.0
-subpixel_res_x = 10
-subpixel_res_y = 10
+s_x = s_y = 1.0 / PIXEL_SIZE
+subpixel_res_x = 3
+subpixel_res_y = 3
 map_res_x = 6000
 map_res_y = 6000
 max_wavenumbner_x = 6
@@ -22,10 +27,7 @@ max_wavenumber_y = 6
 dx = 1.0 / subpixel_res_x
 dy = 1.0 / subpixel_res_y
 
-PIXEL_SIZE = 9.0 # microns
 
-MAX_ITER = 10
-NUM_SPOTS = 10
 
 class SubpixelCoeffSolver:
     """
@@ -63,12 +65,11 @@ class SubpixelCoeffSolver:
         self.all_pixels = all_pixels
         self.all_pixel_stddevs = all_pixel_stddevs
         self.spots = spots
-        self.intensities = RegularGridInterpolator((c_src.x_vals / PIXEL_SIZE,c_src.y_vals / PIXEL_SIZE), c_src.I_vals)
+        self.intensities = RegularGridInterpolator((c_src.x_vals / PIXEL_SIZE, c_src.y_vals / PIXEL_SIZE), c_src.I_vals)
         
         self.response_matrix, self.intensity_matrix, self.response_indices = self._get_intensities_and_responses()
         self.rotate_vector = numpy.full((1,subpixel_res_x * subpixel_res_y),1)
         u, s, self.vh = numpy.linalg.svd(self.rotate_vector, full_matrices = True)
-
         # print(self.intensities((1,1)))
     
     def _get_intensities_and_responses(self):
@@ -93,7 +94,7 @@ class SubpixelCoeffSolver:
 
         return all_responses[:idx], all_intensities[:idx, :], response_indices
     
-    def _plot_for_spot(self,spot_number, scaled_response_matrix):
+    def _plot_for_spot(self,spot_number, scaled_response_matrix, x):
         start_index= self.response_indices[spot_number]
         if spot_number == self.spots.size - 1:
             stop_index = scaled_response_matrix.size
@@ -101,13 +102,14 @@ class SubpixelCoeffSolver:
             stop_index=self.response_indices[spot_number + 1]
         spot_responses = scaled_response_matrix[start_index:stop_index]
         spot_intensities = self.intensity_matrix[start_index:stop_index, :]
-    
-        plt.scatter(spot_responses,spot_intensities.dot(self.rotate_vector[0]))
-        plt.xlim(0,1e-6/4)
-        plt.ylim(0,1e-5/5)
+        #x = numpy.arange(int(x) - 6, int(x) + 6 + 1)
+        #plt.scatter(x,spot_responses)
+        plt.plot(spot_responses, spot_intensities.dot(self.rotate_vector[0]), 'o')
+
         plt.savefig(f'plots/spot{spot_number}')
         plt.clf()
     
+
     def _get_scaled_responses(self, spl_map=None, spot_number=0):
         amplitudes = numpy.empty((self.spots.size,))
 
@@ -132,15 +134,17 @@ class SubpixelCoeffSolver:
             )
 
             amplitude = amplitude[0][0]
+            amplitudes[spot_number] = amplitude
 
             spot_responses /= amplitude
 
-            print(f"SPOT: {spot_number}\tAmplitude: {amplitude}")
-        return scaled_response_matrix
+            #print(f"SPOT: {spot_number}\tAmplitude: {amplitude}")
+        return scaled_response_matrix, amplitudes
     
     def _get_spl_map(self, scaled_responses):
-
+        #print("ROT", self.rotate_vector)
         rotated_spl_map = numpy.linalg.lstsq(self.intensity_matrix.dot(self.vh[:,1:]), scaled_responses - self.intensity_matrix.dot(self.rotate_vector[0]), rcond=None)
+        #print(rotated_spl_map[0])
         spl_map = self.rotate_vector + self.vh[:,1:].dot(rotated_spl_map[0])
         return spl_map[0]
 
@@ -166,18 +170,21 @@ class SubpixelCoeffSolver:
     def solve(self):
         last_spl_map = None
         scaled_responses = None
+        last_amplitudes=None
         for i in range(MAX_ITER):
-            scaled_responses = self._get_scaled_responses(last_spl_map)
+            scaled_responses, amplitudes = self._get_scaled_responses(last_spl_map)
             
             spl_map = self._get_spl_map(scaled_responses)
-            print("SPL:", spl_map)
+            #print("SPL:", spl_map)
 
+            if last_amplitudes is not None:
+                print("DELTA A / A", (amplitudes - last_amplitudes) / amplitudes)
+                print("DELTA SPL / SPL", (spl_map - last_spl_map) / spl_map)
+            last_amplitudes = amplitudes
             last_spl_map = spl_map
-        
-        for i in range(NUM_SPOTS):
-            self._plot_for_spot(spot_number=i, scaled_response_matrix=scaled_responses)
-        print("IMAX", numpy.amax(self.intensity_matrix))
-
+        print(last_spl_map)
+        #for i in range(NUM_SPOTS):
+            #self._plot_for_spot(spot_number=i, scaled_response_matrix=scaled_responses, x=self.spots[i][0])
 
 spot_sources = read_spot_sources("/home/epsilon/Documents/photometry/images/projected/calibrated_nontilted_scan_projected_0068.fistar", 4,5)[:NUM_SPOTS]
 pixel_values, pixel_stddevs = get_pixel_values("/home/epsilon/Documents/photometry/images/cal/calibrated_nontilted_scan_0068.fits.fz")
