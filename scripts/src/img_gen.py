@@ -7,15 +7,17 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import math
 import sys
 
-wavelength = 0.6
+PIXEL_SIZE = 9.0
+
+wavelength = 0.6 / PIXEL_SIZE
 focal_ratio = 11.0
-s_x = s_y = 1.0
+s_x = s_y = 1.0 / PIXEL_SIZE
 subpixel_res_x = 10
 subpixel_res_y = 10
-map_res_x = 6000
+map_res_x = 6000 
 map_res_y = 6000
-max_wavenumbner_x = 6
-max_wavenumber_y = 6
+max_wavenumbner_x = 6 * PIXEL_SIZE
+max_wavenumber_y = 6 * PIXEL_SIZE
 
 fig = plt.figure()
 
@@ -33,7 +35,7 @@ Z = c_src.I_vals
 ax.set_xlabel('x (microns)')
 ax.set_ylabel('y (microns)')
 
-surf = ax.plot_surface(X[:30, :30],Y[:30, :30],Z[:30, :30], cmap=cm.coolwarm,
+surf = ax.plot_surface(X[:90, :90],Y[:90, :90],Z[:90, :90], cmap=cm.coolwarm,
                        linewidth=0, antialiased=False)
 
 fig.colorbar(surf, shrink=0.5, aspect=5)

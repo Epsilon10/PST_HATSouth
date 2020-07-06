@@ -57,8 +57,8 @@ def get_center_row(source, radius):
     return indices
 
 def get_responses_for_spot(spot, all_pixel_values, all_pixel_stddevs):
-    matched_indices = get_surrounding_pixels(spot, all_pixel_values.shape)
-    #matched_indices = get_center_row(spot, 6)
+    #matched_indices = get_surrounding_pixels(spot, all_pixel_values.shape)
+    matched_indices = get_center_row(spot, 4)
 
     raw_responses = all_pixel_values[matched_indices['y'], matched_indices['x']]
     pixel_stddevs = all_pixel_stddevs[matched_indices['y'], matched_indices['x']]
