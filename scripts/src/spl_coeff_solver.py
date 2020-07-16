@@ -131,10 +131,9 @@ class SubpixelCoeffSolver:
         idx = numpy.argmax(spot_responses)
         x = numpy.arange(int(x) - 4, int(x) + 4 + 1)
         #plt.scatter(x,spot_responses)
-        plt.yscale('log')
         #plt.plot(x, spot_intensities.dot(self.rotate_vector[0]), 'o')
-        #plt.plot(x, spot_intensities.dot(spl_map),'o')
-        plt.errorbar(x, spot_responses,yerr=1.0/amp, label='both limits (default)')
+        plt.plot(x,spot_intensities.dot(spl_map),'o')
+        plt.plot(x,spot_responses,'o')
 
         plt.savefig(f'plots/spot{spot_number}')
         plt.clf()
@@ -147,7 +146,9 @@ class SubpixelCoeffSolver:
         scaled_response_matrix = copy.deepcopy(self.response_matrix)
         scaled_stddevs = copy.deepcopy(self.stddevs)
         if spl_map is None:
-            spl_map = numpy.full((subpixel_res_x * subpixel_res_y,), 1)
+            spl_map = numpy.array([0.,0.,0.,0., 9., 0., 0., 0., 0.])
+
+        print(spl_map)
 
         for spot_number in range(self.num_spots):
             start_index= self.response_indices[spot_number]
@@ -159,16 +160,21 @@ class SubpixelCoeffSolver:
             spot_responses = scaled_response_matrix[start_index:stop_index]
             spot_intensities = self.intensity_matrix[start_index:stop_index, :]
             spot_stddevs = scaled_stddevs[start_index:stop_index]
+            x=spot_intensities.dot(spl_map).reshape(spot_responses.size,1)
             amplitude = numpy.linalg.lstsq(
-                spot_intensities.dot(spl_map).reshape(spot_responses.size,1), 
+                x, 
                 spot_responses, 
                 rcond=None
             )
+            
             amplitude = amplitude[0][0]
             amplitudes[spot_number] = amplitude
-
+            #plt.plot(x, spot_responses, 'o')
+            #plt.plot(x, amplitude*x, 'o')
+            #plt.show()
             spot_responses /= amplitude
             spot_stddevs /=amplitude
+            
 
         #print(amplitudes)
         return scaled_response_matrix, amplitudes, scaled_stddevs
@@ -218,7 +224,7 @@ class SubpixelCoeffSolver:
                 print("--------- SS AMP -----------")
                 print("                            ")
 
-                if ss_spl < 1e-10:
+                if ss_spl < 1e-9:
                     print("NUM ITERS:",i)
                     print("-------- SPL MAP ----------")
                     print(spl_map)
