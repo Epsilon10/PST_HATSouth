@@ -24,11 +24,11 @@ from prf import PRF
 
 PIXEL_SIZE = 9.0 # microns
 
-wavelength = 0.6 / PIXEL_SIZE
+wavelength = 1.0 / PIXEL_SIZE
 focal_ratio = 11.0
 s_x = s_y = 1.0 / PIXEL_SIZE
-subpixel_res_x = 3
-subpixel_res_y = 3
+subpixel_res_x = 1
+subpixel_res_y = 1
 map_res_x = 6000
 map_res_y = 6000 
 max_wavenumbner_x = 6 * PIXEL_SIZE 
@@ -707,6 +707,7 @@ def plot_prf_slice(prf_data,
         )
         if spline is not None:
             spline_x = scipy.linspace(prf_data[0].min(), prf_data[0].max(), 300)
+            print("spline x: ", spline_x)
             spline_y = spline(spline_x, y_offset).flatten()
     else:
         plot_pixel_indices = scipy.nonzero(
@@ -715,12 +716,14 @@ def plot_prf_slice(prf_data,
         if spline is not None:
             spline_x = scipy.linspace(prf_data[1].min(), prf_data[1].max(), 300)
             spline_y = spline(x_offset, spline_x).flatten()
-
+            print("spline x: ", spline_x)
     plot_x = prf_data[
         0 if x_offset is None else 1
     ][
         plot_pixel_indices
     ]
+
+    print("PLOT X:", plot_x)
 
     plot_y = prf_data[2][plot_pixel_indices]
 
@@ -740,7 +743,7 @@ def plot_prf_slice(prf_data,
         pyplot.plot(spline_x,
                     spline_y,
                     '-',
-                    color=points_color,
+                    color='red',
                     linewidth=5,
                     zorder=20,
                     alpha=0.85)

@@ -37,15 +37,16 @@ def get_surrounding_pixels(source,pixels_shape, radius=5):
 
     idx = 0
 
+    #print(f"S shape {subgrid_shape[0], subgrid_shape[1]}")
+
     for pixel_y in range(0, subgrid_shape[0]):
         for pixel_x in range(0, subgrid_shape[1]):
             img_y = y_min + pixel_y + 0.5
             img_x = x_min + pixel_x + 0.5
             dist_squared = (img_x - x)**2 + (img_y - y)**2
             if dist_squared <= radius_squared:
-                indices[idx] = (img_x, img_y)
+                indices[idx] = (img_x - 0.5, img_y -0.5)
                 idx += 1
-
     return indices[:idx]
 
 def get_center_row(source, radius):
@@ -57,7 +58,6 @@ def get_center_row(source, radius):
     return indices
 
 def get_responses_for_spot(spot, all_pixel_values, all_pixel_stddevs):
-    #matched_indices = get_surrounding_pixels(spot, all_pixel_values.shape)
     matched_indices = get_center_row(spot, 4)
 
     raw_responses = all_pixel_values[matched_indices['y'], matched_indices['x']]
@@ -67,10 +67,6 @@ def get_responses_for_spot(spot, all_pixel_values, all_pixel_stddevs):
     pixel_coords_y = matched_indices['y'] - spot[1]
 
     response_data, median_stddev = get_adjusted_responses(spot, raw_responses, all_pixel_values, all_pixel_stddevs)
-
-    
-    #plt.savefig(f'plots/thing')
-    #plt.clf()
 
     pixel_coords = numpy.column_stack((pixel_coords_x, pixel_coords_y))
 

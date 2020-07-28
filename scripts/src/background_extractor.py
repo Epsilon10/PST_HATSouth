@@ -32,9 +32,9 @@ def get_pixels_in_range(source, bound, pixels_shape):
 
     for pixel_y in range(0, subgrid_shape[0]):
         for pixel_x in range(0, subgrid_shape[1]):
-            img_y = y_min + pixel_y + 0.5
-            img_x = x_min + pixel_x + 0.5
-            dist_squared = (img_x - x)**2 + (img_y - y)**2
+            img_y = y_min + pixel_y
+            img_x = x_min + pixel_x
+            dist_squared = (img_x + 0.5 - x)**2 + (img_y + 0.5 - y)**2
             if dist_squared <= hi_squared and dist_squared >= lo_squared:
                 indices[idx] = (img_x, img_y)
                 idx += 1
